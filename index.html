@@ -264,7 +264,12 @@ async function boot() {
   try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch {}
   setSync("Saved on this phone · back up in Goals");
   watchDay();
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if ("serviceWorker" in navigator) {
+    // When a new version takes over, reload once so it shows right away
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloaded && navigator.serviceWorker.controller) { reloaded = true; location.reload(); } });
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(r => r.update()).catch(() => {});
+  }
 }
 function normProfile(p) {
   // Goals never changed from the first version's defaults: move them to the new defaults

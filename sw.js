@@ -1,5 +1,6 @@
-﻿// Keeps the app working offline: serve saved copies, refresh them in the background.
-const CACHE = "mfb-v3";
+﻿// Keeps the app working offline. The page itself is fetched fresh when online (so updates
+// show up on the next open); icons and other files come from the saved copy first.
+const CACHE = "mfb-v4";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -12,11 +13,12 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   if (e.request.method !== "GET") return;
-  e.respondWith(caches.match(e.request).then(hit => {
-    const fresh = fetch(e.request).then(res => {
-      if (res.ok && new URL(e.request.url).origin === location.origin) caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-      return res;
-    }).catch(() => hit);
-    return hit || fresh;
-  }));
+  const sameOrigin = new URL(e.request.url).origin === location.origin;
+  const save = res => { if (res.ok && sameOrigin) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); } return res; };
+  if (e.request.mode === "navigate") {
+    // Network first for the page, saved copy when offline
+    e.respondWith(fetch(e.request, { cache: "no-store" }).then(save).catch(() => caches.match(e.request).then(hit => hit || caches.match("index.html"))));
+    return;
+  }
+  e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).then(save)));
 });
