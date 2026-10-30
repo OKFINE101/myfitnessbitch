@@ -1,5 +1,5 @@
 ﻿// Keeps the app working offline: serve saved copies, refresh them in the background.
-const CACHE = "mfb-v2";
+const CACHE = "mfb-v3";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {

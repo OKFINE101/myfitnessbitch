@@ -197,7 +197,9 @@ const BUILTIN = [
 ["Energy drink","16 oz can",210,0,54,0],["Sports drink","20 oz",130,0,34,0]
 ];
 const MEALS = ["Breakfast","Lunch","Dinner","Snacks"];
-const DEFAULT_GOALS = {kcal:2200, protein:150, carbs:220, fat:70};
+// Lean bulk for 5'8", 155 lb: about maintenance + a small surplus, ~1 g protein per lb
+const DEFAULT_GOALS = {kcal:2400, protein:150, carbs:300, fat:65};
+const OLD_DEFAULT_GOALS = {kcal:2200, protein:150, carbs:220, fat:70};
 
 const $ = s => document.querySelector(s);
 const el = (tag, props = {}, kids = []) => { const e = document.createElement(tag); for (const [k,v] of Object.entries(props)) {
@@ -265,7 +267,9 @@ async function boot() {
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 function normProfile(p) {
-  return { goals: { ...DEFAULT_GOALS, ...(p.goals || {}) }, foods: Array.isArray(p.foods) ? p.foods : [], recents: Array.isArray(p.recents) ? p.recents : [] };
+  // Goals never changed from the first version's defaults: move them to the new defaults
+  const g = p.goals || {}, untouched = Object.keys(OLD_DEFAULT_GOALS).every(k => g[k] === OLD_DEFAULT_GOALS[k]);
+  return { goals: untouched ? { ...DEFAULT_GOALS } : { ...DEFAULT_GOALS, ...g }, foods: Array.isArray(p.foods) ? p.foods : [], recents: Array.isArray(p.recents) ? p.recents : [] };
 }
 
 // ---------- totals ----------
